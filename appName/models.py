@@ -22,6 +22,28 @@ class Towns(models.Model):
     military = models.IntegerField(blank=True, null=True)
     whom = models.ForeignKey(Profile, null=True, related_name="towns")
 
+    def __str__(self):
+        return self.name
+
+
+class Building(models.Model):
+    type = models.CharField(max_length=30, blank=True)
+    level = models.IntegerField(blank=True, null=True)
+    town = models.ForeignKey(Towns, null=True, related_name="buildings")
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def img(self):
+        return '%s%s/%s%s' % ('/images/', self.type, str(self.level), '.jpg')
+
+    @property
+    def construction_time(self):
+        return self.level * 20
+
+    def __str__(self):
+        return self.type
+
+
 
 
 

@@ -27,20 +27,20 @@ class TownViewSet(viewsets.ModelViewSet):
     serializer_class = TownSerializer
 
 
-class ProfileViewSet(generics.RetrieveUpdateDestroyAPIView):
+class ProfileViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
     lookup_field = 'id'
-    serializer_class = ProfileSerializer
 
     def get_queryset(self):
         return Profile.objects.all()
 
+    def get_serializer_class(self):
+        if self.action in ['create', 'update']:
+            return CreateUpdateProfileSerializer
+        return ReadOnlyProfileSerializer
 
-class ProfileCrudView(mixins.CreateModelMixin, generics.ListAPIView):
-    lookup_field = 'pk'
-    serializer_class = ProfileSerializer
 
-    def get_queryset(self):
-        return Profile.objects.all()
+class BuildingViewSet(viewsets.ModelViewSet):
+    queryset = Building.objects.all()
+    serializer_class = BuildingSerializer
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)

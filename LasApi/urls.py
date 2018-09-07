@@ -21,14 +21,13 @@ from appName.views import *
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
-router.register(r'towns', TownViewSet)
-router.register(r'profilesList', ProfileViewSet)
+router.register(r'towns', TownViewSet, base_name='townofsalem')
+router.register(r'profiles', ProfileViewSet, base_name='profiles')
+router.register(r'buildings', BuildingViewSet, base_name='buildings')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),
-    url(r'^rest-auth/', include('rest_auth.urls')),
-    url(r'^rest-auth/registration/', include('rest_auth.registration.urls')),
-    url(r'^profiles/$', ProfileCrudView.as_view()),
-    url(r'^profiles/(?P<id>\d+)/$', ProfileViewSet.as_view()),
+    url(r'^auth/', include('rest_auth.urls')),
+    url(r'^auth/registration/', include('rest_auth.registration.urls')),
 ]
