@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.conf.urls import url, include
 from django.contrib.auth.models import User
-from rest_framework import routers, serializers, viewsets
-from Serializer import UserSerializer
+from rest_framework import routers, serializers, viewsets, status
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import render
 from models import *
-from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 from rest_framework import viewsets, generics, mixins
 from Serializer import *
+from tasks import add
 
 # Create your views here.
 
@@ -23,8 +21,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class TownViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Towns.objects.all()
-    serializer_class = TownSerializer
+
+    def get_queryset(self):
+        return Towns.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update']:
+            return CreateUpdateTownSerializer
+        return ReadOnlyTownSerializer
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -41,6 +45,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class BuildingViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
     queryset = Building.objects.all()
     serializer_class = BuildingSerializer
 

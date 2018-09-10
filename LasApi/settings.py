@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'appName.apps.AppnameConfig',
+    'appName.apps.AppNameConfig',
+    #'TestCel.apps.TestcelConfig',
     'rest_framework',
     'rest_auth',
     'rest_auth.registration',
@@ -47,8 +48,11 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'rest_framework.authtoken',
-    'corsheaders'
+    #'corsheaders',
+    'djcelery',
+
 ]
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -58,7 +62,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    #'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -162,3 +166,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+import djcelery
+djcelery.setup_loader()
+
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_RESULT_BACKEND = os.path.join(BASE_DIR, 'db.sqlite3')
+CELERY_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+

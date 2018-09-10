@@ -13,6 +13,10 @@ class Profile(models.Model):
     def town(self):
         return Towns.objects.filter(whom=self)
 
+    @property
+    def score(self):
+        return self.town.level * 25
+
     def __str__(self):
         return self.user.username
 
@@ -28,9 +32,10 @@ class Towns(models.Model):
 
 class Building(models.Model):
     type = models.CharField(max_length=30, blank=True)
-    level = models.IntegerField(blank=True, null=True)
+    level = models.IntegerField(blank=True, null=True, default=1)
     town = models.ForeignKey(Towns, null=True, related_name="buildings")
     created_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=30, blank=True, null=True, default="loading")
 
     @property
     def img(self):

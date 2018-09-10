@@ -13,30 +13,37 @@ class BuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Building
-        fields = ('id','type', 'level', 'town', 'img', 'created_date', 'construction_time')
+        fields = ('id','type', 'level', 'town', 'img', 'created_date', 'construction_time', 'status')
 
 
-class TownSerializer(serializers.ModelSerializer):
-    buildings = BuildingSerializer(many=True)
+class ReadOnlyTownSerializer(serializers.ModelSerializer):
+    buildings = BuildingSerializer(many=True, read_only=True)
 
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'buildings')
+        fields = ('id', 'name', 'military', 'buildings', 'whom')
+
+
+class CreateUpdateTownSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Towns
+        fields = ('id', 'name', 'military', 'whom')
 
 
 class ReadOnlyProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    town = TownSerializer(many=True)
+    town = ReadOnlyTownSerializer(many=True, read_only=True)
 
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields = ("bio", "point", 'user', 'score', 'town')
 
 
 class CreateUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('bio', 'point')
+        fields = ('bio', 'point', 'user', 'town')
 
 
 
