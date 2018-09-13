@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
-from rest_framework import routers, serializers, viewsets, status
+from rest_framework import routers, serializers, viewsets, status, request
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from models import *
+from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import viewsets, generics, mixins
 from Serializer import *
@@ -14,12 +16,14 @@ from tasks import add
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
 class TownViewSet(viewsets.ModelViewSet):
+
+    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -32,7 +36,6 @@ class TownViewSet(viewsets.ModelViewSet):
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
     lookup_field = 'id'
 
     def get_queryset(self):
@@ -45,7 +48,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class BuildingViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
     queryset = Building.objects.all()
     serializer_class = BuildingSerializer
 

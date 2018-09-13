@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=500, blank=True)
-    point = models.IntegerField(blank=True, null=True)
 
     @property
     def town(self):
@@ -15,7 +14,10 @@ class Profile(models.Model):
 
     @property
     def score(self):
-        return self.town.level * 25
+        total = 0
+        for i in self.town:
+            total = i.military * 25
+        return total
 
     def __str__(self):
         return self.user.username

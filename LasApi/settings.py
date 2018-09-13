@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'rest_framework.authtoken',
-    #'corsheaders',
+    'corsheaders',
     'djcelery',
 
 ]
@@ -62,7 +62,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
-    #'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

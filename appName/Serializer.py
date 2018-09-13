@@ -6,14 +6,14 @@ from models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('url', 'username', 'email', 'password', 'is_staff')
+        fields = ('url', 'username', 'email', 'is_staff', 'profile')
 
 
 class BuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Building
-        fields = ('id','type', 'level', 'town', 'img', 'created_date', 'construction_time', 'status')
+        fields = ('id', 'type', 'level', 'town', 'img', 'created_date', 'construction_time', 'status')
 
 
 class ReadOnlyTownSerializer(serializers.ModelSerializer):
@@ -37,13 +37,13 @@ class ReadOnlyProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ("bio", "point", 'user', 'score', 'town')
+        fields = ("bio", 'user', 'score', 'town')
 
 
 class CreateUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('bio', 'point', 'user', 'town')
+        fields = ('bio', 'user', 'town')
 
 
 

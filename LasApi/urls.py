@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.conf.urls import url, include
+from rest_framework.authtoken import views
 from django.contrib.auth.models import User
 from rest_framework import routers, serializers, viewsets
 from appName.views import *
@@ -30,4 +31,5 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^auth/', include('rest_auth.urls')),
     url(r'^auth/registration/', include('rest_auth.registration.urls')),
+    url(r'^api-token-auth/', views.obtain_auth_token)
 ]
