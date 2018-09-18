@@ -52,7 +52,7 @@ class Building(models.Model):
         if self.level == 0:
             return 180
         else:
-            return self.level * 360 + self.level ** 6
+            return self.level * 20 + self.level ** 2
 
     @property
     def cost(self):
