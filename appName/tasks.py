@@ -18,9 +18,11 @@ app = Celery('tasks', broker='amqp://guest@localhost:5672//')
 @app.task()
 def add(x, y):
     builts = Building.objects.filter(status="loading")
+    towns = Towns.objects.all()
     for i in builts:
         if (i.change_date + (timedelta(seconds=i.construction_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
             builts.filter(id=i.id).update(status="completed", level=i.level+1)
+
 
 
 @app.task
