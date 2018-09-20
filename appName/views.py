@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
-from django.contrib.auth.models import User
-from rest_framework import routers, serializers, viewsets, status, request
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from models import *
-from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
-from rest_framework import viewsets, generics, mixins
+from rest_framework import viewsets
 from Serializer import *
-from tasks import add
 
 # Create your views here.
 

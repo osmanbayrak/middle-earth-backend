@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from jsonfield import JSONField
-#from Serializer import *
 
 
 class Profile(models.Model):
@@ -75,7 +74,8 @@ class Building(models.Model):
             if self.level == 0:
                 return {"wood": 200, "stone": 250, "food": 1000}
             else:
-                return {"wood": self.level * 350 + self.level ** 3, "stone": self.level * 500 + self.level ** 3}
+                return {"wood": self.level * 350 + self.level ** 3, "stone": self.level * 500 + self.level ** 3,
+                        "food": self.level * 800 + self.level **4}
         else:
             if self.level == 0:
                 return {"wood": 250, "stone": 300}
