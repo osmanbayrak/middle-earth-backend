@@ -9,5 +9,6 @@ class AppNameConfig(AppConfig):
 
     def ready(self):
         super(AppNameConfig, self).ready()
-        from appName.tasks import add
-        from appName.tasks import myuniq
+        from appName.tasks import military_check
+        from appName.tasks import building_check
+        from appName.tasks import town_check

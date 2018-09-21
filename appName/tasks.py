@@ -10,20 +10,30 @@ app = Celery('tasks', broker='amqp://guest@localhost:5672//')
 
 
 @app.task()
-def add(x, y):
+def building_check():
     builts = Building.objects.filter(status="loading")
     for i in builts:
         if (i.change_date + (timedelta(seconds=i.construction_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
             builts.filter(id=i.id).update(status="completed", level=i.level+1)
+
+
+@app.task()
+def military_check():
+    preparing_troops = Troop.objects.filter(status="preparing")
+    for i in preparing_troops:
+        if i.change_date:
+            if (i.change_date + (timedelta(seconds=i.preparation_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
+                preparing_troops.filter(id=i.id).update(status="ready", tier=i.tier + 1)
+        else:
+            print i.id + "id li troop change date secmedi!"
 # def add(x, y):
 #     builts = Building.objects.filter(status="completed")
 #     for i in builts:
 #         builts.filter(id=i.id).update(status="completed", level=0)
 
 
-
 @app.task
-def myuniq():
+def town_check():
     towns = Towns.objects.all()
     for i in towns:
         try:

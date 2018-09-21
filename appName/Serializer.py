@@ -44,7 +44,7 @@ class ReadOnlyTownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources')
+        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops')
 
 
 class CreateUpdateTownSerializer(serializers.ModelSerializer):
