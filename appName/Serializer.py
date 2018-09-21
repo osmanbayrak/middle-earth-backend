@@ -4,8 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.serializers import raise_errors_on_nested_writes
 from rest_framework.utils import model_meta
-
-from models import Building, Towns, Profile
+from models import Building, Towns, Profile, Troop
 import ast
 
 
@@ -110,8 +109,6 @@ class CreateUpdateTownSerializer(serializers.ModelSerializer):
         return instance
 
 
-
-
 class ReadOnlyProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     town = ReadOnlyTownSerializer(many=True, read_only=True)
@@ -125,6 +122,31 @@ class CreateUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('bio', 'user', 'town')
+
+
+class TroopSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Troop
+        fields = ('id', 'type', 'tier', 'town', 'img', 'created_date', 'change_date', 'preparation_time', 'status', 'power', 'town_position', 'cost',)
+
+    # def update(self, instance, validated_data):
+    #     raise_errors_on_nested_writes('update', self, validated_data)
+    #     info = model_meta.get_field_info(instance)
+    #
+    #     # if validated_data["status"] == "loading":
+    #     #     if ((instance.cost["stone"] > instance.town.resources["stone"]) if ("stone" in instance.cost) else False) or ((instance.cost["wood"] > instance.town.resources["wood"]) if ("wood" in instance.cost) else False) or ((instance.cost["food"] > instance.town.resources["food"]) if ("food" in instance.cost) else False):
+    #     #         raise ValueError("Not enough resources")
+    #
+    #     for attr, value in validated_data.items():
+    #         if attr in info.relations and info.relations[attr].to_many:
+    #             field = getattr(instance, attr)
+    #             field.set(value)
+    #         else:
+    #             setattr(instance, attr, value)
+    #     instance.save()
+    #
+    #     return instance
 
 
 

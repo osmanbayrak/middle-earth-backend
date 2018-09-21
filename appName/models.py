@@ -49,9 +49,9 @@ class Building(models.Model):
     @property
     def construction_time(self):
         if self.level == 0:
-            return 40
+            return 180
         else:
-            return 40
+            return self.level * 20 + self.level ** 2
 
     @property
     def cost(self):
@@ -64,12 +64,12 @@ class Building(models.Model):
             if self.level == 0:
                 return {"wood": 700, "stone": 1500}
             else:
-                return {"wood": self.level * 700 + self.level ** 3, "stone": self.level * 1000 + self.level ** 4}
+                return {"wood": self.level * 1000 + self.level ** 4, "stone": self.level * 700 + self.level ** 3}
         elif self.type == "stable":
             if self.level == 0:
                 return {"wood": 1000, "stone": 2000}
             else:
-                return {"wood": self.level * 1000 + self.level ** 3, "stone": self.level * 2000 + self.level ** 4}
+                return {"wood": self.level * 1000 + self.level ** 4, "stone": self.level * 2000 + self.level ** 4}
         elif self.type == "house":
             if self.level == 0:
                 return {"wood": 200, "stone": 250, "food": 1000}
@@ -84,6 +84,45 @@ class Building(models.Model):
 
     def __str__(self):
         return self.type
+
+
+class Troop(models.Model):
+    type = models.CharField(max_length=30, blank=True)
+    tier = models.IntegerField(blank=True, null=True, default=1)
+    town = models.ForeignKey(Towns, null=True, related_name="troops")
+    created_date = models.DateTimeField(auto_now_add=True)
+    change_date = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=30, blank=True, null=True, default="preparing")
+    town_position = models.CharField(max_length=30, blank=True)
+
+    @property
+    def cost(self):
+        if self.type == "lander":
+            return {"wood": self.tier * 100 + self.tier ** 3, "stone": self.tier * 250 + self.tier ** 4, "food": self.tier * 500 + self.tier ** 5}
+        elif self.type == "bowman":
+            return {"wood": self.tier * 300 + self.tier ** 4, "stone": self.tier * 200 + self.tier ** 3, "food": self.tier * 550 + self.tier ** 5}
+        elif self.type == "cavalry":
+            return {"wood": self.tier * 500 + self.tier ** 4, "stone": self.tier * 350 + self.tier ** 5, "food": self.tier * 800 + self.tier ** 6}
+
+    @property
+    def power(self):
+        if self.type == "lander":
+            return self.tier**3 + self.tier*100
+        elif self.type == "bowman":
+            return self.tier**4 + self.tier*200
+        elif self.type == "cavalry":
+            return self.tier**5 + self.tier*400
+
+    @property
+    def img(self):
+        return '%s%s/%s%s' % ('images/', self.type, str(self.tier), '.png')
+
+    @property
+    def preparation_time(self):
+        if self.tier == 0:
+            return 360
+        else:
+            return self.tier * 40 + self.tier ** 2
 
 
 

@@ -6,6 +6,7 @@ from rest_framework import viewsets
 from Serializer import *
 
 # Create your views here.
+from appName.models import Troop
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -42,4 +43,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
 class BuildingViewSet(viewsets.ModelViewSet):
     queryset = Building.objects.all()
     serializer_class = BuildingSerializer
+
+
+class TroopViewSet(viewsets.ModelViewSet):
+    queryset = Troop.objects.all()
+    serializer_class = TroopSerializer
 

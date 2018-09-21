@@ -15,6 +15,10 @@ def add(x, y):
     for i in builts:
         if (i.change_date + (timedelta(seconds=i.construction_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
             builts.filter(id=i.id).update(status="completed", level=i.level+1)
+# def add(x, y):
+#     builts = Building.objects.filter(status="completed")
+#     for i in builts:
+#         builts.filter(id=i.id).update(status="completed", level=0)
 
 
 
@@ -27,4 +31,4 @@ def myuniq():
                                                 "stone": float(i.resources["stone"]) + float((i.buildings.get(type="stone").level ** 3 + i.buildings.get(type="stone").level*120))/100,
                                                 "food": float(i.resources["food"]) + float((i.buildings.get(type="farm").level ** 3 + i.buildings.get(type="farm").level*120))/100})
         except Exception:
-            print "This town has no building about resources"
+            print i.name + "town has no resources building!"
