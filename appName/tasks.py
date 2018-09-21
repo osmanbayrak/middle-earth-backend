@@ -22,10 +22,11 @@ def military_check():
     preparing_troops = Troop.objects.filter(status="preparing")
     for i in preparing_troops:
         if i.change_date:
-            if (i.change_date + (timedelta(seconds=i.preparation_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
+            if (i.change_date.replace(tzinfo=utc) + (timedelta(seconds=i.preparation_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
                 preparing_troops.filter(id=i.id).update(status="ready", tier=i.tier + 1)
         else:
-            print i.id + "id li troop change date secmedi!"
+            print '%s%s' % (i.id, "id li troop change date secmedi!")
+            preparing_troops.filter(id=i.id).update(status="ready")
 # def add(x, y):
 #     builts = Building.objects.filter(status="completed")
 #     for i in builts:
