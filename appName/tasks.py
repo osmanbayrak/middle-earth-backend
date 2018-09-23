@@ -1,4 +1,6 @@
 from celery import Celery
+from django.db.models import F
+
 from models import *
 from datetime import timedelta, time
 import datetime
@@ -15,6 +17,7 @@ def building_check():
     for i in builts:
         if (i.change_date + (timedelta(seconds=i.construction_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
             builts.filter(id=i.id).update(status="completed", level=i.level+1)
+            Towns.objects.filter(id=i.town.id).update(building_queue=F('building_queue')-1)
 
 
 @app.task()
@@ -24,6 +27,7 @@ def military_check():
         if i.change_date:
             if (i.change_date.replace(tzinfo=utc) + (timedelta(seconds=i.preparation_time))).replace(tzinfo=utc) <= (datetime.datetime.now()).replace(tzinfo=utc):
                 preparing_troops.filter(id=i.id).update(status="ready", tier=i.tier + 1)
+                Towns.objects.filter(id=i.town.id).update(troop_queue=F('troop_queue') - 1)
         else:
             print '%s%s' % (i.id, "id li troop change date secmedi!")
             preparing_troops.filter(id=i.id).update(status="ready")

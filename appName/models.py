@@ -86,7 +86,7 @@ class Building(models.Model):
     @property
     def construction_time(self):
         if self.level == 0:
-            return 25
+            return 180
         else:
             return self.level * 300 + (self.level ** 3)*5
 
