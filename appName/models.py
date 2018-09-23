@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 from jsonfield import JSONField
 
 TROOP_TYPES = (
-        ("lander", "Lander"),
+        ("lancer", "Lancer"),
         ("cavalry", "Cavalry"),
-        ("bowman", "Archer"))
+        ("archer", "Archer"))
 BUILDING_TYPES = (
         ("timber", "Timber"),
         ("main", "Main building"),
@@ -59,6 +59,10 @@ class Towns(models.Model):
     military = models.IntegerField(blank=True, null=True)
     whom = models.ForeignKey(Profile, null=True, related_name="towns")
     resources = JSONField(null=True, blank=True)
+    building_queue = models.IntegerField(blank=True, default=0)
+    troop_queue = models.IntegerField(blank=True, default=0)
+    building_process_limit = models.IntegerField(blank=True, default=2)
+    military_process_limit = models.IntegerField(blank=True, default=2)
 
     def __str__(self):
         return self.name
@@ -77,12 +81,12 @@ class Building(models.Model):
 
     @property
     def img(self):
-        return '%s%s/%s%s' % ('images/', self.type, str(self.level), '.png')
+        return '%s%s/%s%s' % ('images/buildings/', self.type, str(self.level), '.png')
 
     @property
     def construction_time(self):
         if self.level == 0:
-            return 180
+            return 25
         else:
             return self.level * 300 + (self.level ** 3)*5
 
@@ -115,6 +119,17 @@ class Building(models.Model):
             else:
                 return {"wood": self.level * 350 + self.level ** 4, "stone": self.level * 500 + self.level ** 5}
 
+    @property
+    def sector(self):
+        if self.type == "timber" or self.type == "stone" or self.type == "farm":
+            return "production"
+        elif self.type == "barrack" or self.type == "stable" or self.type == "archery":
+            return "military"
+        elif self.type == "main":
+            return "town center"
+        elif self.type == "depot" or self.type == "house":
+            return "others"
+
     def __str__(self):
         return self.type
 
@@ -130,12 +145,12 @@ class Troop(models.Model):
 
     @property
     def cost(self):
-        if self.type == "lander":
+        if self.type == "lancer":
             if self.tier == 0:
                 return {"wood": 250, "stone": 300, "food": 800}
             else:
                 return {"wood": self.tier * 150 + self.tier ** 3, "stone": self.tier * 250 + self.tier ** 4, "food": self.tier * 500 + self.tier ** 5}
-        elif self.type == "bowman":
+        elif self.type == "archer":
             if self.tier == 0:
                 return {"wood": 400, "stone": 300, "food": 900}
             else:
@@ -148,9 +163,9 @@ class Troop(models.Model):
 
     @property
     def power(self):
-        if self.type == "lander":
+        if self.type == "lancer":
             return self.tier**3 + self.tier*100
-        elif self.type == "bowman":
+        elif self.type == "archer":
             return self.tier**4 + self.tier*200
         elif self.type == "cavalry":
             return self.tier**5 + self.tier*400
@@ -162,7 +177,12 @@ class Troop(models.Model):
     @property
     def preparation_time(self):
         if self.tier == 0:
-            return 360
+            if self.type == "lancer":
+                return 360
+            elif self.type == "archer":
+                return 480
+            elif self.type == "cavalry":
+                return 840
         else:
             return self.tier * 40 + self.tier ** 2
 

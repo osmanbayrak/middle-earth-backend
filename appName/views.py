@@ -47,5 +47,5 @@ class BuildingViewSet(viewsets.ModelViewSet):
 
 class TroopViewSet(viewsets.ModelViewSet):
     queryset = Troop.objects.all()
-    serializer_class = BuildingSerializer
+    serializer_class = TroopSerializer
 

@@ -1,6 +1,7 @@
 import traceback
 
 from django.contrib.auth.models import User
+from django.db.models import F
 from rest_framework import serializers
 from rest_framework.serializers import raise_errors_on_nested_writes
 from rest_framework.utils import model_meta
@@ -14,19 +15,63 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('url', 'username', 'email', 'is_staff', 'profile')
 
 
-class BuildingSerializer(serializers.ModelSerializer):
+class TroopSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Building
-        fields = ('id', 'type', 'level', 'town', 'img', 'created_date', 'change_date', 'construction_time', 'status', 'cost')
+        model = Troop
+        fields = ('id', 'type', 'tier', 'town', 'img', 'created_date', 'change_date', 'preparation_time', 'status',
+                  'power', 'town_position', 'cost',)
 
     def update(self, instance, validated_data):
         raise_errors_on_nested_writes('update', self, validated_data)
         info = model_meta.get_field_info(instance)
 
-        if validated_data["status"] == "loading":
+        if instance.status != "preparing" and validated_data["status"] == "preparing":
+            if ((instance.cost["stone"] > instance.town.resources["stone"]) if ("stone" in instance.cost) else False) or ((instance.cost["wood"] > instance.town.resources["wood"]) if ("wood" in instance.cost) else False) or ((instance.cost["food"] > instance.town.resources["food"]) if ("food" in instance.cost) else False):
+                raise ValueError("Not enough resources for troop update")
+            else:
+                troop_town = Towns.objects.filter(id=validated_data["town"].id)
+                if troop_town.get().troop_queue < troop_town.get().military_process_limit:
+                    troop_town.update(troop_queue=F('troop_queue') + 1)
+                else:
+                    raise ValueError("Your troop process limit is at maximum")
+
+        if instance.status != "ready" and validated_data["status"] == "ready":
+            Towns.objects.filter(id=validated_data["town"].id).update(troop_queue=F('troop_queue') - 1)
+
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                field = getattr(instance, attr)
+                field.set(value)
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+
+        return instance
+
+
+class BuildingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Building
+        fields = ('id', 'type', 'level', 'town', 'img', 'created_date', 'change_date', 'construction_time', 'status', 'cost', 'sector')
+
+    def update(self, instance, validated_data):
+        raise_errors_on_nested_writes('update', self, validated_data)
+        info = model_meta.get_field_info(instance)
+
+        if instance.status != "loading" and validated_data["status"] == "loading":
             if ((instance.cost["stone"] > instance.town.resources["stone"]) if ("stone" in instance.cost) else False) or ((instance.cost["wood"] > instance.town.resources["wood"]) if ("wood" in instance.cost) else False) or ((instance.cost["food"] > instance.town.resources["food"]) if ("food" in instance.cost) else False):
                 raise ValueError("Not enough resources")
+            else:
+                buildings_town = Towns.objects.filter(id=validated_data["town"].id)
+                if buildings_town.get().building_queue < buildings_town.get().building_process_limit:
+                    buildings_town.update(building_queue=F('building_queue')+1)
+                else:
+                    raise ValueError("Your building process limit is maximum")
+
+        if instance.status != "completed" and validated_data["status"] == "completed":
+            Towns.objects.filter(id=validated_data["town"].id).update(building_queue=F('building_queue')-1)
 
         for attr, value in validated_data.items():
             if attr in info.relations and info.relations[attr].to_many:
@@ -41,16 +86,17 @@ class BuildingSerializer(serializers.ModelSerializer):
 
 class ReadOnlyTownSerializer(serializers.ModelSerializer):
     buildings = BuildingSerializer(many=True, read_only=True)
+    troops = TroopSerializer(many=True, read_only=True)
 
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops')
+        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops', 'building_queue', 'troop_queue', 'building_process_limit', 'military_process_limit')
 
 
 class CreateUpdateTownSerializer(serializers.ModelSerializer):
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'whom', 'resources')
+        fields = ('id', 'name', 'military', 'whom', 'resources', 'building_queue', 'troop_queue', 'military_process_limit', 'building_process_limit')
 
     def update(self, instance, validated_data):
         raise_errors_on_nested_writes('update', self, validated_data)
@@ -109,8 +155,6 @@ class CreateUpdateTownSerializer(serializers.ModelSerializer):
         return instance
 
 
-
-
 class ReadOnlyProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     town = ReadOnlyTownSerializer(many=True, read_only=True)
@@ -124,31 +168,6 @@ class CreateUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('bio', 'user', 'town')
-
-
-class TroopSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Troop
-        fields = ('id', 'type', 'tier', 'town', 'img', 'created_date', 'change_date', 'preparation_time', 'status', 'power', 'town_position', 'cost',)
-
-    def update(self, instance, validated_data):
-        raise_errors_on_nested_writes('update', self, validated_data)
-        info = model_meta.get_field_info(instance)
-
-        if validated_data["status"] == "preparing":
-            if ((instance.cost["stone"] > instance.town.resources["stone"]) if ("stone" in instance.cost) else False) or ((instance.cost["wood"] > instance.town.resources["wood"]) if ("wood" in instance.cost) else False) or ((instance.cost["food"] > instance.town.resources["food"]) if ("food" in instance.cost) else False):
-                raise ValueError("Not enough resources for troop update")
-
-        for attr, value in validated_data.items():
-            if attr in info.relations and info.relations[attr].to_many:
-                field = getattr(instance, attr)
-                field.set(value)
-            else:
-                setattr(instance, attr, value)
-        instance.save()
-
-        return instance
 
 
 
