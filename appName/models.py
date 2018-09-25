@@ -16,7 +16,8 @@ BUILDING_TYPES = (
         ("stable", "Stable"),
         ("farm", "Farm"),
         ("depot", "Depot"),
-        ("house", "House"))
+        ("house", "House"),
+        ("archery", "Archery"))
 
 BUILDING_STATUSES=(
     ("loading", "Under construction"),

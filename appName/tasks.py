@@ -31,19 +31,27 @@ def military_check():
         else:
             print '%s%s' % (i.id, "id li troop change date secmedi!")
             preparing_troops.filter(id=i.id).update(status="ready")
-# def add(x, y):
-#     builts = Building.objects.filter(status="completed")
-#     for i in builts:
-#         builts.filter(id=i.id).update(status="completed", level=0)
 
 
 @app.task
 def town_check():
     towns = Towns.objects.all()
     for i in towns:
+        loading_que = 0
+        preparing_que = 0
         try:
-            towns.filter(id=i.id).update(resources={"wood": float(i.resources["wood"]) + float((i.buildings.get(type="timber").level ** 3 + i.buildings.get(type="timber").level*120))/100,
-                                                "stone": float(i.resources["stone"]) + float((i.buildings.get(type="stone").level ** 3 + i.buildings.get(type="stone").level*120))/100,
-                                                "food": float(i.resources["food"]) + float((i.buildings.get(type="farm").level ** 3 + i.buildings.get(type="farm").level*120))/100})
-        except Exception:
-            print i.name + "town has no resources building!"
+            towns.filter(id=i.id).update(resources={"wood": float(i.resources["wood"]) + float((i.buildings.get(type="timber").level ** 3 + i.buildings.get(type="timber").level*120))/100 + 3,
+                                                "stone": float(i.resources["stone"]) + float((i.buildings.get(type="stone").level ** 3 + i.buildings.get(type="stone").level*120))/100 + 4,
+                                                "food": float(i.resources["food"]) + float((i.buildings.get(type="farm").level ** 3 + i.buildings.get(type="farm").level*120))/100 + 3})
+            for j in i.buildings:
+                if j["status"] == "loading":
+                    loading_que += 1
+            i.building_queue = loading_que
+
+            for j in i.troops:
+                if j["status"] == "preparing":
+                    preparing_que += 1
+            i.troop_queue = preparing_que
+
+        except:
+            return None
