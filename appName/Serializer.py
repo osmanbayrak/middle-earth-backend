@@ -148,14 +148,18 @@ class BuildingSerializer(serializers.ModelSerializer):
                 buildings_town = Towns.objects.filter(id=validated_data["town"].id)
                 if buildings_town.get().building_queue < buildings_town.get().building_process_limit:
                     buildings_town.update(building_queue=F('building_queue')+1,
-                                          resources={"wood": float(buildings_town.get().resources["wood"]) - float(instance.cost["wood"]),
-                                                     "food": float(buildings_town.get().resources["food"]) - float(instance.cost["food"]),
-                                                     "stone": float(buildings_town.get().resources["stone"]) - float(instance.cost["stone"])})
+                                          resources={"wood": float(buildings_town.get().resources["wood"]) - float(instance.cost["wood"] if ("wood" in instance.cost) else 0),
+                                                     "food": float(buildings_town.get().resources["food"]) - float(instance.cost["food"] if ("food" in instance.cost) else 0),
+                                                     "stone": float(buildings_town.get().resources["stone"]) - float(instance.cost["stone"] if ("stone" in instance.cost) else 0)})
                 else:
                     raise ValueError("Your building process limit is maximum")
 
         if instance.status != "completed" and validated_data["status"] == "completed":
-            Towns.objects.filter(id=validated_data["town"].id).update(building_queue=F('building_queue')-1)
+            buildings_town = Towns.objects.filter(id=validated_data["town"].id)
+            Towns.objects.filter(id=validated_data["town"].id).update(building_queue=F('building_queue')-1,
+                                                                      resources={"wood": float(buildings_town.get().resources["wood"]) + float(instance.cost["wood"] if ("wood" in instance.cost) else 0),
+                                                                              "food": float(buildings_town.get().resources["food"]) + float(instance.cost["food"] if ("food" in instance.cost) else 0),
+                                                                              "stone": float(buildings_town.get().resources["stone"]) + float(instance.cost["stone"] if ("stone" in instance.cost) else 0)})
 
         for attr, value in validated_data.items():
             if attr in info.relations and info.relations[attr].to_many:
@@ -166,7 +170,6 @@ class BuildingSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
-
 
 
 class ReadOnlyTownSerializer(serializers.ModelSerializer):

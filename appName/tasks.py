@@ -37,21 +37,22 @@ def military_check():
 def town_check():
     towns = Towns.objects.all()
     for i in towns:
-        loading_que = 0
-        preparing_que = 0
+        loading_que = []
+        preparing_que = []
         try:
-            towns.filter(id=i.id).update(resources={"wood": float(i.resources["wood"]) + float((i.buildings.get(type="timber").level ** 3 + i.buildings.get(type="timber").level*120))/100 + 3,
-                                                "stone": float(i.resources["stone"]) + float((i.buildings.get(type="stone").level ** 3 + i.buildings.get(type="stone").level*120))/100 + 4,
-                                                "food": float(i.resources["food"]) + float((i.buildings.get(type="farm").level ** 3 + i.buildings.get(type="farm").level*120))/100 + 3})
-            for j in i.buildings:
-                if j["status"] == "loading":
-                    loading_que += 1
-            i.building_queue = loading_que
+            towns.filter(id=i.id).update(resources={"wood": float(i.resources["wood"]) + float((i.buildings.get(type="timber").level ** 3 + i.buildings.get(type="timber").level*120))/100 + 1,
+                                                "stone": float(i.resources["stone"]) + float((i.buildings.get(type="stone").level ** 3 + i.buildings.get(type="stone").level*120))/100 + 2,
+                                                "food": float(i.resources["food"]) + float((i.buildings.get(type="farm").level ** 3 + i.buildings.get(type="farm").level*120))/100 + 1})
 
-            for j in i.troops:
-                if j["status"] == "preparing":
-                    preparing_que += 1
-            i.troop_queue = preparing_que
+            buildings = Building.objects.filter(status="loading", town=i.id)
+            for j in buildings:
+                loading_que.append(j)
+            towns.filter(id=i.id).update(building_queue=len(loading_que))
+
+            troops = Troop.objects.filter(status="preparing", town=i.id)
+            for j in troops:
+                preparing_que.append(j)
+            towns.filter(id=i.id).update(troop_queue=len(preparing_que))
 
         except:
             return None

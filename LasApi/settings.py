@@ -86,7 +86,6 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
 )
-CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_METHODS = (
     'DELETE',
@@ -98,6 +97,14 @@ CORS_ALLOW_METHODS = (
 )
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    'localhost:7000',
+)
+
+CORS_ORIGIN_REGEX_WHITELIST = (
+    'localhost:7000',
+)
 
 TEMPLATES = [
     {
