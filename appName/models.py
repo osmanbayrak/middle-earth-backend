@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from jsonfield import JSONField
+from django.db.models import Q
+import math
 
 TROOP_TYPES = (
         ("lancer", "Lancer"),
@@ -62,8 +64,41 @@ class Towns(models.Model):
     resources = JSONField(null=True, blank=True)
     building_queue = models.IntegerField(blank=True, default=0)
     troop_queue = models.IntegerField(blank=True, default=0)
-    building_process_limit = models.IntegerField(blank=True, default=2)
-    military_process_limit = models.IntegerField(blank=True, default=2)
+
+    @property
+    def population_limit(self):
+        try:
+            house = self.buildings.get(type="house").level
+            main = self.buildings.get(type="main").level
+            return 7 + (2**house + 2**main)
+        except:
+            return 9
+
+    @property
+    def building_process_limit(self):
+        try:
+            result = self.population_limit**(1./4.)
+            if result == 0:
+                return 1
+            else:
+                return result
+        except:
+            return 1
+
+    @property
+    def military_process_limit(self):
+        try:
+            result = 1
+            military_buildings = self.buildings.filter(Q(type="stable") | Q(type="barrack") | Q(type="archery"))
+            for i in military_buildings:
+                result += i.level
+            result = result/5
+            if result == 0:
+                return 1
+            else:
+                return result
+        except:
+            return 1
 
     def __str__(self):
         return self.name
@@ -86,10 +121,22 @@ class Building(models.Model):
 
     @property
     def construction_time(self):
-        if self.level == 0:
-            return 180
+        if self.type == "main":
+            return (self.level * 300 + (self.level ** 3)*5)
         else:
-            return self.level * 300 + (self.level ** 3)*5
+            mainLevel = self.town.buildings.get(type="main").level
+            if self.level == 0:
+                result = 180-(mainLevel**(22./6.))
+                if result > 0:
+                    return result
+                else:
+                    return 10
+            else:
+                result = (self.level * 300 + (self.level ** 3)*5) - (mainLevel**(22./6.))
+                if result > 0:
+                    return result
+                else:
+                    return 10
 
     @property
     def cost(self):
@@ -177,15 +224,36 @@ class Troop(models.Model):
 
     @property
     def preparation_time(self):
-        if self.tier == 0:
-            if self.type == "lancer":
-                return 360
-            elif self.type == "archer":
-                return 480
-            elif self.type == "cavalry":
-                return 840
-        else:
-            return self.tier * 40 + self.tier ** 2
+        if self.type == "lancer":
+            buildingLevel = self.town.buildings.get(type="barrack", town=self.town.id).level
+            if self.tier == 0:
+                result = 360 - (buildingLevel ** (22. / 6.))
+                if result > 0:
+                    return result
+                else:
+                    return 15
+            else:
+                return self.tier * 420 + self.tier ** 3 - (buildingLevel ** (22. / 6.))
+        elif self.type == "archer":
+            buildingLevel = self.town.buildings.get(type="archery").level
+            if self.tier == 0:
+                result = 480 - (buildingLevel ** (22. / 6.))
+                if result > 0:
+                    return result
+                else:
+                    return 15
+            else:
+                return self.tier * 480 + self.tier ** 3 - (buildingLevel ** (22. / 6.))
+        elif self.type == "cavalry":
+            buildingLevel = self.town.buildings.get(type="stable").level
+            if self.tier == 0:
+                result = 840 - (buildingLevel ** (22. / 6.))
+                if result > 0:
+                    return result
+                else:
+                    return 15
+            else:
+                return self.tier * 620 + self.tier ** 3 - (buildingLevel ** (22. / 6.))
 
 
 

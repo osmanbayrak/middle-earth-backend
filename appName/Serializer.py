@@ -33,9 +33,9 @@ class TroopSerializer(serializers.ModelSerializer):
                 troop_town = Towns.objects.filter(id=validated_data["town"].id)
                 if troop_town.get().troop_queue < troop_town.get().military_process_limit: # hersey uygun level up icin
                     troop_town.update(troop_queue=F('troop_queue') + 1,
-                                      resources={"wood": float(troop_town.get().resources["wood"]) - float(instance.cost["wood"]),
-                                                 "food": float(troop_town.get().resources["food"]) - float(instance.cost["food"]),
-                                                 "stone": float(troop_town.get().resources["stone"]) - float(instance.cost["stone"])})
+                                      resources={"wood": float(troop_town.get().resources["wood"]) - (float(instance.cost["wood"]) if ("wood" in instance.cost) else 0),
+                                                 "food": float(troop_town.get().resources["food"]) - (float(instance.cost["food"]) if ("food" in instance.cost) else 0),
+                                                 "stone": float(troop_town.get().resources["stone"]) - (float(instance.cost["stone"]) if ("stone" in instance.cost) else 0)})
                 else:
                     raise ValueError("Your troop process limit is at maximum")
 
