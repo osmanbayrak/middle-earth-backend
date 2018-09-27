@@ -179,13 +179,13 @@ class ReadOnlyTownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops', 'building_queue', 'troop_queue', 'building_process_limit', 'military_process_limit')
+        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops', 'building_queue', 'troop_queue', 'building_process_limit', 'military_process_limit', 'x_coord', 'y_coord')
 
 
 class CreateUpdateTownSerializer(serializers.ModelSerializer):
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'whom', 'resources', 'building_queue', 'troop_queue', 'military_process_limit', 'building_process_limit')
+        fields = ('id', 'name', 'military', 'whom', 'resources', 'building_queue', 'troop_queue', 'military_process_limit', 'building_process_limit', 'x_coord', 'y_coord')
 
     def update(self, instance, validated_data):
         raise_errors_on_nested_writes('update', self, validated_data)

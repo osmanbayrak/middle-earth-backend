@@ -64,6 +64,11 @@ class Towns(models.Model):
     resources = JSONField(null=True, blank=True)
     building_queue = models.IntegerField(blank=True, default=0)
     troop_queue = models.IntegerField(blank=True, default=0)
+    x_coord = models.IntegerField(null=True)
+    y_coord = models.IntegerField(null=True)
+
+    class Meta:
+        unique_together = ("x_coord", "y_coord",)
 
     @property
     def population_limit(self):
