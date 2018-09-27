@@ -81,7 +81,7 @@ class Towns(models.Model):
             if result == 0:
                 return 1
             else:
-                return result
+                return int(result)
         except:
             return 1
 
@@ -96,7 +96,7 @@ class Towns(models.Model):
             if result == 0:
                 return 1
             else:
-                return result
+                return int(result)
         except:
             return 1
 
