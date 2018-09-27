@@ -179,7 +179,7 @@ class ReadOnlyTownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops', 'building_queue', 'troop_queue', 'building_process_limit', 'military_process_limit', 'x_coord', 'y_coord')
+        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops', 'building_queue', 'troop_queue', 'building_process_limit', 'military_process_limit', 'x_coord', 'y_coord', 'population_limit')
 
 
 class CreateUpdateTownSerializer(serializers.ModelSerializer):
@@ -218,9 +218,10 @@ class CreateUpdateTownSerializer(serializers.ModelSerializer):
                 many_to_many[field_name] = validated_data.pop(field_name)
 
         try:
-            if "resources" in validated_data:
-                validated_data["resources"] = ast.literal_eval(validated_data["resources"])
             instance = ModelClass.objects.create(**validated_data)
+            types = ['main', 'timber', 'stone', 'depot']
+            for i in types:
+                Building.objects.create(type=i, level=1, town=instance, status='completed')
         except TypeError:
             tb = traceback.format_exc()
             msg = (
