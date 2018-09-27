@@ -4,6 +4,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from Serializer import *
+from url_filter.integrations.drf import DjangoFilterBackend
 
 # Create your views here.
 from appName.models import Troop
@@ -23,9 +24,12 @@ class TownViewSet(viewsets.ModelViewSet):
         return Towns.objects.all()
 
     def get_serializer_class(self):
-        if self.action in ['create', 'update']:
+        if self.action in ['create', 'update', 'partial_update']:
             return CreateUpdateTownSerializer
         return ReadOnlyTownSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ['x_coord', 'y_coord']
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -38,6 +42,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update']:
             return CreateUpdateProfileSerializer
         return ReadOnlyProfileSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ['user']
 
 
 class BuildingViewSet(viewsets.ModelViewSet):

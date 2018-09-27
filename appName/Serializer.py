@@ -33,9 +33,9 @@ class TroopSerializer(serializers.ModelSerializer):
                 troop_town = Towns.objects.filter(id=validated_data["town"].id)
                 if troop_town.get().troop_queue < troop_town.get().military_process_limit: # hersey uygun level up icin
                     troop_town.update(troop_queue=F('troop_queue') + 1,
-                                      resources={"wood": float(troop_town.get().resources["wood"]) - (float(instance.cost["wood"]) if ("wood" in instance.cost) else 0),
-                                                 "food": float(troop_town.get().resources["food"]) - (float(instance.cost["food"]) if ("food" in instance.cost) else 0),
-                                                 "stone": float(troop_town.get().resources["stone"]) - (float(instance.cost["stone"]) if ("stone" in instance.cost) else 0)})
+                                      resources={"wood": (troop_town.get().resources["wood"]) - ((instance.cost["wood"]) if ("wood" in instance.cost) else 0),
+                                                 "food": (troop_town.get().resources["food"]) - ((instance.cost["food"]) if ("food" in instance.cost) else 0),
+                                                 "stone": (troop_town.get().resources["stone"]) - ((instance.cost["stone"]) if ("stone" in instance.cost) else 0)})
                 else:
                     raise ValueError("Your troop process limit is at maximum")
 
@@ -97,9 +97,9 @@ class TroopSerializer(serializers.ModelSerializer):
                     troop_town = Towns.objects.filter(id=validated_data["town"].id)
                     if troop_town.get().troop_queue < troop_town.get().military_process_limit:  # hersey uygun level up icin
                         troop_town.update(troop_queue=F('troop_queue') + 1,
-                                          resources={"wood": float(troop_town.get().resources["wood"]) - (float(troop_cost["wood"]) if ("wood" in troop_cost) else 0),
-                                                     "food": float(troop_town.get().resources["food"]) - (float(troop_cost["food"]) if ("food" in troop_cost) else 0),
-                                                     "stone": float(troop_town.get().resources["stone"]) - (float(troop_cost["stone"]) if ("stone" in troop_cost) else 0)})
+                                          resources={"wood": (troop_town.get().resources["wood"]) - ((troop_cost["wood"]) if ("wood" in troop_cost) else 0),
+                                                     "food": (troop_town.get().resources["food"]) - ((troop_cost["food"]) if ("food" in troop_cost) else 0),
+                                                     "stone": (troop_town.get().resources["stone"]) - ((troop_cost["stone"]) if ("stone" in troop_cost) else 0)})
                     else:
                         raise ValueError("Your troop process limit is at maximum")
 
@@ -148,18 +148,18 @@ class BuildingSerializer(serializers.ModelSerializer):
                 buildings_town = Towns.objects.filter(id=validated_data["town"].id)
                 if buildings_town.get().building_queue < buildings_town.get().building_process_limit:
                     buildings_town.update(building_queue=F('building_queue')+1,
-                                          resources={"wood": float(buildings_town.get().resources["wood"]) - float(instance.cost["wood"] if ("wood" in instance.cost) else 0),
-                                                     "food": float(buildings_town.get().resources["food"]) - float(instance.cost["food"] if ("food" in instance.cost) else 0),
-                                                     "stone": float(buildings_town.get().resources["stone"]) - float(instance.cost["stone"] if ("stone" in instance.cost) else 0)})
+                                          resources={"wood": (buildings_town.get().resources["wood"]) - (instance.cost["wood"] if ("wood" in instance.cost) else 0),
+                                                     "food": (buildings_town.get().resources["food"]) - (instance.cost["food"] if ("food" in instance.cost) else 0),
+                                                     "stone": (buildings_town.get().resources["stone"]) - (instance.cost["stone"] if ("stone" in instance.cost) else 0)})
                 else:
                     raise ValueError("Your building process limit is maximum")
 
         if instance.status != "completed" and validated_data["status"] == "completed":
             buildings_town = Towns.objects.filter(id=validated_data["town"].id)
             Towns.objects.filter(id=validated_data["town"].id).update(building_queue=F('building_queue')-1,
-                                                                      resources={"wood": float(buildings_town.get().resources["wood"]) + float(instance.cost["wood"] if ("wood" in instance.cost) else 0),
-                                                                              "food": float(buildings_town.get().resources["food"]) + float(instance.cost["food"] if ("food" in instance.cost) else 0),
-                                                                              "stone": float(buildings_town.get().resources["stone"]) + float(instance.cost["stone"] if ("stone" in instance.cost) else 0)})
+                                                                      resources={"wood": (buildings_town.get().resources["wood"]) + (instance.cost["wood"] if ("wood" in instance.cost) else 0),
+                                                                              "food": (buildings_town.get().resources["food"]) + (instance.cost["food"] if ("food" in instance.cost) else 0),
+                                                                              "stone": (buildings_town.get().resources["stone"]) + (instance.cost["stone"] if ("stone" in instance.cost) else 0)})
 
         for attr, value in validated_data.items():
             if attr in info.relations and info.relations[attr].to_many:
@@ -204,7 +204,8 @@ class CreateUpdateTownSerializer(serializers.ModelSerializer):
         return instance
 
     def create(self, validated_data):
-        validated_data["resources"] = ast.literal_eval(validated_data["resources"])
+        if "resources" in validated_data:
+            validated_data["resources"] = ast.literal_eval(validated_data["resources"])
 
         raise_errors_on_nested_writes('create', self, validated_data)
 
@@ -217,6 +218,8 @@ class CreateUpdateTownSerializer(serializers.ModelSerializer):
                 many_to_many[field_name] = validated_data.pop(field_name)
 
         try:
+            if "resources" in validated_data:
+                validated_data["resources"] = ast.literal_eval(validated_data["resources"])
             instance = ModelClass.objects.create(**validated_data)
         except TypeError:
             tb = traceback.format_exc()

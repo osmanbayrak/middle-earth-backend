@@ -40,9 +40,9 @@ def town_check():
         loading_que = []
         preparing_que = []
         try:
-            towns.filter(id=i.id).update(resources={"wood": float(i.resources["wood"]) + float((i.buildings.get(type="timber").level ** 3 + i.buildings.get(type="timber").level*120))/100 + 1,
-                                                "stone": float(i.resources["stone"]) + float((i.buildings.get(type="stone").level ** 3 + i.buildings.get(type="stone").level*120))/100 + 2,
-                                                "food": float(i.resources["food"]) + float((i.buildings.get(type="farm").level ** 3 + i.buildings.get(type="farm").level*120))/100 + 1})
+            towns.filter(id=i.id).update(resources={"wood": int(float(i.resources["wood"]) + float((i.buildings.get(type="timber").level ** 3 + i.buildings.get(type="timber").level*120))/100 + 1),
+                                                "stone": int(float(i.resources["stone"]) + float((i.buildings.get(type="stone").level ** 3 + i.buildings.get(type="stone").level*120))/100 + 2),
+                                                "food": int(float(i.resources["food"]) + float((i.buildings.get(type="farm").level ** 3 + i.buildings.get(type="farm").level*120))/100 + 1)})
 
             buildings = Building.objects.filter(status="loading", town=i.id)
             for j in buildings:

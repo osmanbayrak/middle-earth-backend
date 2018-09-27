@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+import random
+
 from django.db import models
 from django.contrib.auth.models import User
 from jsonfield import JSONField
 from django.db.models import Q
-import math
+from django.core.validators import MaxValueValidator
 
 TROOP_TYPES = (
         ("lancer", "Lancer"),
@@ -58,14 +61,14 @@ class Profile(models.Model):
 
 
 class Towns(models.Model):
-    name = models.CharField(max_length=30, blank=True)
+    name = models.CharField(max_length=30, unique=True)
     military = models.IntegerField(blank=True, null=True)
     whom = models.ForeignKey(Profile, null=True, related_name="towns")
-    resources = JSONField(null=True, blank=True)
-    building_queue = models.IntegerField(blank=True, default=0)
-    troop_queue = models.IntegerField(blank=True, default=0)
-    x_coord = models.IntegerField(null=True)
-    y_coord = models.IntegerField(null=True)
+    resources = JSONField(default={'wood': 1000, 'food': 1000, 'stone': 1000})
+    building_queue = models.IntegerField(default=0)
+    troop_queue = models.IntegerField(default=0)
+    x_coord = models.IntegerField(null=False, validators=[MaxValueValidator(300)], default=random.randint(10, 300))
+    y_coord = models.IntegerField(null=False, validators=[MaxValueValidator(300)], default=random.randint(10, 300))
 
     class Meta:
         unique_together = ("x_coord", "y_coord",)
@@ -111,11 +114,11 @@ class Towns(models.Model):
 
 class Building(models.Model):
     type = models.CharField(choices=BUILDING_TYPES, max_length=30, blank=False, null=False)
-    level = models.IntegerField(blank=False, null=False, default=1)
-    town = models.ForeignKey(Towns, null=True, related_name="buildings")
+    level = models.IntegerField(default=1)
+    town = models.ForeignKey(Towns, related_name="buildings")
     created_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(blank=True, null=True)
-    status = models.CharField(choices=BUILDING_STATUSES, max_length=30, blank=False, null=False, default="loading")
+    status = models.CharField(choices=BUILDING_STATUSES, max_length=30, default="completed")
 
     class Meta:
         unique_together = ("town", "type",)
@@ -127,19 +130,19 @@ class Building(models.Model):
     @property
     def construction_time(self):
         if self.type == "main":
-            return (self.level * 300 + (self.level ** 3)*5)
+            return int(self.level * 300 + (self.level ** 3)*5)
         else:
             mainLevel = self.town.buildings.get(type="main").level
             if self.level == 0:
                 result = 180-(mainLevel**(22./6.))
                 if result > 0:
-                    return result
+                    return int(result)
                 else:
                     return 10
             else:
                 result = (self.level * 300 + (self.level ** 3)*5) - (mainLevel**(22./6.))
                 if result > 0:
-                    return result
+                    return int(result)
                 else:
                     return 10
 
@@ -178,9 +181,7 @@ class Building(models.Model):
             return "production"
         elif self.type == "barrack" or self.type == "stable" or self.type == "archery":
             return "military"
-        elif self.type == "main":
-            return "town center"
-        elif self.type == "depot" or self.type == "house":
+        else:
             return "others"
 
     def __str__(self):
@@ -188,13 +189,13 @@ class Building(models.Model):
 
 
 class Troop(models.Model):
-    type = models.CharField(choices=TROOP_TYPES, null=False, max_length=30, blank=False)
-    tier = models.IntegerField(blank=False, null=False, default=1)
-    town = models.ForeignKey(Towns, null=True, related_name="troops")
+    type = models.CharField(choices=TROOP_TYPES, max_length=30)
+    tier = models.IntegerField(default=0)
+    town = models.ForeignKey(Towns, related_name="troops")
     created_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(blank=True, null=True)
-    status = models.CharField(choices=TROOP_STATUSES, max_length=30, blank=False, null=False, default="preparing")
-    town_position = models.CharField(choices=TROOP_TOWN_POSITIONS, max_length=30,null=False, blank=True, default="center")
+    status = models.CharField(choices=TROOP_STATUSES, max_length=30, default="preparing")
+    town_position = models.CharField(choices=TROOP_TOWN_POSITIONS, max_length=30, default="center")
 
     @property
     def cost(self):
@@ -234,31 +235,31 @@ class Troop(models.Model):
             if self.tier == 0:
                 result = 360 - (buildingLevel ** (22. / 6.))
                 if result > 0:
-                    return result
+                    return int(result)
                 else:
                     return 15
             else:
-                return self.tier * 420 + self.tier ** 3 - (buildingLevel ** (22. / 6.))
+                return int(self.tier * 420 + self.tier ** 3 - (buildingLevel ** (22. / 6.)))
         elif self.type == "archer":
             buildingLevel = self.town.buildings.get(type="archery").level
             if self.tier == 0:
                 result = 480 - (buildingLevel ** (22. / 6.))
                 if result > 0:
-                    return result
+                    return int(result)
                 else:
                     return 15
             else:
-                return self.tier * 480 + self.tier ** 3 - (buildingLevel ** (22. / 6.))
+                return int(self.tier * 480 + self.tier ** 3 - (buildingLevel ** (22. / 6.)))
         elif self.type == "cavalry":
             buildingLevel = self.town.buildings.get(type="stable").level
             if self.tier == 0:
                 result = 840 - (buildingLevel ** (22. / 6.))
                 if result > 0:
-                    return result
+                    return int(result)
                 else:
                     return 15
             else:
-                return self.tier * 620 + self.tier ** 3 - (buildingLevel ** (22. / 6.))
+                return int(self.tier * 620 + self.tier ** 3 - (buildingLevel ** (22. / 6.)))
 
 
 
