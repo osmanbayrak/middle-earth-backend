@@ -61,7 +61,7 @@ class Profile(models.Model):
 
 
 class Towns(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=15, unique=True)
     military = models.IntegerField(blank=True, null=True)
     whom = models.ForeignKey(Profile, null=True, related_name="towns")
     resources = JSONField(default={'wood': 1000, 'food': 1000, 'stone': 1000})
@@ -107,6 +107,10 @@ class Towns(models.Model):
                 return int(result)
         except:
             return 1
+
+    @property
+    def population(self):
+        return self.troops.count()
 
     def __str__(self):
         return self.name
