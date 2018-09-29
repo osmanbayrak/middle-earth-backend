@@ -179,7 +179,7 @@ class ReadOnlyTownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Towns
-        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops', 'building_queue', 'troop_queue', 'building_process_limit', 'military_process_limit', 'x_coord', 'y_coord', 'population_limit', 'population')
+        fields = ('id', 'name', 'military', 'buildings', 'whom', 'resources', 'troops', 'building_queue', 'troop_queue', 'building_process_limit', 'military_process_limit', 'x_coord', 'y_coord', 'population_limit', 'population', 'production')
 
 
 class CreateUpdateTownSerializer(serializers.ModelSerializer):

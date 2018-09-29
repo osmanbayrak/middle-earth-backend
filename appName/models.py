@@ -78,9 +78,9 @@ class Towns(models.Model):
         try:
             house = self.buildings.get(type="house").level
             main = self.buildings.get(type="main").level
-            return 7 + (2**house + 2**main)
+            return (7 + (2**house + 2**main))*10
         except:
-            return 9
+            return 9*10
 
     @property
     def building_process_limit(self):
@@ -110,7 +110,30 @@ class Towns(models.Model):
 
     @property
     def population(self):
-        return self.troops.count()
+        return self.troops.count()*10
+
+    @property
+    def production(self):
+        timber = self.buildings.get(type="timber")
+        stone = self.buildings.get(type="stone")
+        farm = self.buildings.get(type="farm")
+        depot = self.buildings.get(type="depot")
+        return {
+                "perHour": {"wood": (float((timber.level ** 3 + timber.level*60))/200 + timber.level+1)*180,
+                            "food": (float((farm.level ** 3 + farm.level * 60)) / 200 + farm.level + 1)*180,
+                            "stone": (float((stone.level ** 3 + stone.level * 60)) / 200 + stone.level + 2)*180
+                        },
+                "extraCapacity": {
+                    "stone": stone.level * 150 + (stone.level * 4) ** 2,
+                    "food": farm.level * 150 + (farm.level * 4) ** 2,
+                    "wood": timber.level * 150 + (timber.level * 4) ** 2
+                        },
+                "totalCapacity": {
+                    "wood": (depot.level*5)**2 + depot.level*400 + timber.level*150 + (timber.level*4)**2 + 3500,
+                    "food": (depot.level * 5) ** 2 + depot.level * 400 + farm.level * 150 + (farm.level * 4) ** 2 + 3500,
+                    "stone": (depot.level * 5) ** 2 + depot.level * 400 + stone.level * 150 + (stone.level * 4) ** 2 + 3500
+                        }
+             }
 
     def __str__(self):
         return self.name
