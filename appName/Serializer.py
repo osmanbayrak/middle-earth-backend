@@ -93,7 +93,7 @@ class TroopSerializer(serializers.ModelSerializer):
                     ((troop_cost["food"] > validated_data["town"].resources["food"]) if ("food" in troop_cost) else False) or
                     ((troop_cost["wood"] > validated_data["town"].resources["wood"]) if ("wood" in troop_cost) else False)):
                     raise ValueError("Not enough resources for create this troop")
-                else:
+                elif validated_data["town"].population < validated_data["town"].population_limit:
                     troop_town = Towns.objects.filter(id=validated_data["town"].id)
                     if troop_town.get().troop_queue < troop_town.get().military_process_limit:  # hersey uygun level up icin
                         troop_town.update(troop_queue=F('troop_queue') + 1,
@@ -102,6 +102,8 @@ class TroopSerializer(serializers.ModelSerializer):
                                                      "stone": (troop_town.get().resources["stone"]) - ((troop_cost["stone"]) if ("stone" in troop_cost) else 0)})
                     else:
                         raise ValueError("Your troop process limit is at maximum")
+                else:
+                    raise ValueError("Population is at maximum")
 
             instance = ModelClass.objects.create(**validated_data)
         except TypeError:

@@ -40,9 +40,9 @@ def town_check():
         loading_que = []
         preparing_que = []
         try:
-            towns.filter(id=i.id).update(resources={"wood": float(i.resources["wood"]) + i.production["perHour"]["wood"]/180,
-                                                "stone": float(i.resources["stone"]) + i.production["perHour"]["stone"]/180,
-                                                "food": float(i.resources["food"]) + i.production["perHour"]["food"]/180})
+            towns.filter(id=i.id).update(resources={"wood": float(i.resources["wood"]) + (i.production["perHour"]["wood"]/180 if (i.production["totalCapacity"]["wood"] > i.resources["wood"]+i.production["perHour"]["wood"]/180) else (i.production["totalCapacity"]["wood"] - i.resources["wood"])),
+                                                "stone": float(i.resources["stone"]) + (i.production["perHour"]["stone"]/180 if (i.production["totalCapacity"]["stone"] > i.resources["stone"]+i.production["perHour"]["stone"]/180) else (i.production["totalCapacity"]["stone"] - i.resources["stone"])),
+                                                "food": float(i.resources["food"]) + (i.production["perHour"]["food"]/180 if (i.production["totalCapacity"]["food"] > i.resources["food"]+i.production["perHour"]["food"]/180) else (i.production["totalCapacity"]["food"] - i.resources["food"]))})
 
             buildings = Building.objects.filter(status="loading", town=i.id)
             for j in buildings:
