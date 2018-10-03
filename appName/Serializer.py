@@ -40,7 +40,12 @@ class TroopSerializer(serializers.ModelSerializer):
                     raise ValueError("Your troop process limit is at maximum")
 
         if instance.status != "ready" and validated_data["status"] == "ready":
-            Towns.objects.filter(id=validated_data["town"].id).update(troop_queue=F('troop_queue') - 1)
+            troop_town = Towns.objects.filter(id=validated_data["town"].id)
+            Towns.objects.filter(id=validated_data["town"].id).update(troop_queue=F('troop_queue') - 1,
+                                                                      resources={"wood": (troop_town.get().resources["wood"]) + (instance.cost["wood"] if ("wood" in instance.cost) else 0),
+                                                                              "food": (troop_town.get().resources["food"]) + (instance.cost["food"] if ("food" in instance.cost) else 0),
+                                                                              "stone": (troop_town.get().resources["stone"]) + (instance.cost["stone"] if ("stone" in instance.cost) else 0)})
+
 
         for attr, value in validated_data.items():
             if attr in info.relations and info.relations[attr].to_many:
@@ -137,7 +142,7 @@ class BuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Building
-        fields = ('id', 'type', 'level', 'town', 'img', 'created_date', 'change_date', 'construction_time', 'status', 'cost', 'sector')
+        fields = ('id', 'type', 'level', 'town', 'img', 'created_date', 'change_date', 'construction_time', 'status', 'cost', 'sector', 'special')
 
     def update(self, instance, validated_data):
         raise_errors_on_nested_writes('update', self, validated_data)
@@ -222,7 +227,7 @@ class CreateUpdateTownSerializer(serializers.ModelSerializer):
         try:
             instance = ModelClass.objects.create(**validated_data)
             types1 = ['main', 'timber', 'stone']
-            types0 = ["farm", 'depot', 'barrack', 'stable', 'archery', 'house']
+            types0 = ["farm", 'depot', 'barrack', 'stable', 'archery', 'house', 'shelter', 'workshop', 'wall']
 
             for i in types1:
                 Building.objects.create(type=i, level=1, town=instance, status='completed')

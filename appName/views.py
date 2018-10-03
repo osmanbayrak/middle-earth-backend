@@ -39,7 +39,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return Profile.objects.all()
 
     def get_serializer_class(self):
-        if self.action in ['create', 'update']:
+        if self.action in ['create', 'update', 'partial_update']:
             return CreateUpdateProfileSerializer
         return ReadOnlyProfileSerializer
 

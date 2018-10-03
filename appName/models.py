@@ -22,7 +22,10 @@ BUILDING_TYPES = (
         ("farm", "Farm"),
         ("depot", "Depot"),
         ("house", "House"),
-        ("archery", "Archery"))
+        ("archery", "Archery"),
+        ("workshop", "Demirci"),
+        ("shelter", "Shelter"),
+        ("wall", "Wall"))
 
 BUILDING_STATUSES=(
     ("loading", "Under construction"),
@@ -30,7 +33,7 @@ BUILDING_STATUSES=(
 )
 TROOP_STATUSES = (
     ("preparing", "Preparing"),
-    ("ready", "Ready to fight")
+    ("ready", "Ready")
 )
 TROOP_TOWN_POSITIONS = (
     ("north", "Defend North"),
@@ -129,9 +132,9 @@ class Towns(models.Model):
                     "wood": timber.level * 150 + (timber.level * 4) ** 2
                         },
                 "totalCapacity": {
-                    "wood": (depot.level*5)**2 + depot.level*400 + timber.level*150 + (timber.level*4)**2 + 3500,
-                    "food": (depot.level * 5) ** 2 + depot.level * 400 + farm.level * 150 + (farm.level * 4) ** 2 + 3500,
-                    "stone": (depot.level * 5) ** 2 + depot.level * 400 + stone.level * 150 + (stone.level * 4) ** 2 + 3500
+                    "wood": (depot.level*5)**2 + depot.level*400 + timber.level*150 + (timber.level*4)**2 + 4500,
+                    "food": (depot.level * 5) ** 2 + depot.level * 400 + farm.level * 150 + (farm.level * 4) ** 2 + 4500,
+                    "stone": (depot.level * 5) ** 2 + depot.level * 400 + stone.level * 150 + (stone.level * 4) ** 2 + 4500
                         }
              }
 
@@ -184,12 +187,17 @@ class Building(models.Model):
             if self.level == 0:
                 return {"wood": 700, "stone": 1500}
             else:
-                return {"wood": self.level * 1000 + self.level ** 4, "stone": self.level * 700 + self.level ** 3}
+                return {"wood": self.level * 700 + self.level ** 4, "stone": self.level * 700 + self.level ** 3}
+        elif self.type == "archery":
+            if self.level == 0:
+                return {"wood": 900, "stone": 2000}
+            else:
+                return {"wood": self.level * 1000 + self.level ** 4, "stone": self.level * 850 + self.level ** 3}
         elif self.type == "stable":
             if self.level == 0:
-                return {"wood": 1000, "stone": 2000}
+                return {"wood": 1500, "stone": 3000}
             else:
-                return {"wood": self.level * 1000 + self.level ** 4, "stone": self.level * 2000 + self.level ** 4}
+                return {"wood": self.level * 1500 + self.level ** 4, "stone": self.level * 2000 + self.level ** 4}
         elif self.type == "house":
             if self.level == 0:
                 return {"wood": 200, "stone": 250, "food": 1000}
@@ -210,6 +218,27 @@ class Building(models.Model):
             return "military"
         else:
             return "others"
+
+    @property
+    def special(self):
+        if self.type == "shelter":
+            if self.level == 1:
+                return {"hidden_limit": 400}
+            else:
+                return {"hidden_limit": self.level**3 + self.level*550}
+        elif self.type == "wall":
+            if self.level == 1:
+                return {"bonus_def": 9}
+            else:
+                return {"bonus_def": self.level**2 + self.level*7}
+        elif self.type == "workshop":
+            return {"armor1": {"cost": {"food": 3500, "wood": 4000, "stone": 5000}, "bonus_def": 100, "bonus_atk": 30},
+                    "armor2": {"cost": {"food": 9000, "wood": 10000, "stone": 12000}, "bonus_def": 250, "bonus_atk": 75},
+                    "armor3": {"cost": {"food": 25000, "wood": 30000, "stone": 40000}, "bonus_def": 450, "bonus_atk": 180},
+                    "sharp1": {"cost": {"food": 4200, "wood": 4800, "stone": 5300}, "bonus_atk": 130, "bonus_def": 45},
+                    "sharp2": {"cost": {"food": 10000, "wood": 12000, "stone": 15000}, "bonus_atk": 290, "bonus_def": 100},
+                    "sharp3": {"cost": {"food": 30000, "wood": 35000, "stone": 45000}, "bonus_atk": 600, "bonus_def": 200}
+                    }
 
     def __str__(self):
         return self.type
@@ -247,9 +276,9 @@ class Troop(models.Model):
         if self.type == "lancer":
             return self.tier**3 + self.tier*100
         elif self.type == "archer":
-            return self.tier**4 + self.tier*200
+            return self.tier**3 + self.tier*200
         elif self.type == "cavalry":
-            return self.tier**5 + self.tier*400
+            return self.tier**4 + self.tier*400
 
     @property
     def img(self):
